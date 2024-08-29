@@ -1,1 +1,37 @@
-# Write Kubernetes Deployment Script
+apiVersion: apps/v1 # Specifies the version of the Kubernetes API to use, in this case, for managing applications (like Deployments).
+kind: Deployment # Defines the type of Kubernetes resource; a Deployment manages a set of replicas of a pod.
+metadata:
+  name: book-catalog # Name of the Deployment, used for identification and management within the cluster.
+spec:
+  replicas: 1 # Specifies the number of pod replicas to run, ensuring only one instance of the pod is maintained.
+  selector: # Defines how the Deployment finds which pods it is responsible for managing.
+    matchLabels: # Matches labels to identify the correct pods.
+      app: book-catalog # The label key-value pair that the Deployment uses to select the pods it manages.
+  template: # The pod template that the Deployment will use to create pods.
+    metadata:
+      labels:
+        app: book-catalog # Labels applied to the pods created by this Deployment, must match the selector.
+    spec:
+      containers: # Specifies the containers that will run inside the pods.
+        - name: book-catalog # Name of the container, for identification and reference within the pod.
+          image: book-catalog # The Docker image to use for this container. (Assumed to be built locally since imagePullPolicy is set to 'Never').
+          imagePullPolicy: Never # Specifies that the image should not be pulled from a registry, assuming it exists locally on the nodes.
+          env: # Environment variables to be passed to the container.
+            - name: DATABASE_URL # Name of the environment variable that will be available inside the container.
+              value:
+                postgresql://sit722_part_2_qd1r_user:zAxhWJVwL8ErMLD6IbKDCNkwaFKWmO2j@dpg-cr85ti23esus73fr09ig-a.oregon-postgres.render.com/sit722_part_2_qd1r
+                # Value of the DATABASE_URL environment variable, specifying the connection string for the PostgreSQL database.
+
+---
+apiVersion: v1 # Specifies the version of the Kubernetes API to use, in this case, for basic Kubernetes objects like Services.
+kind: Service # Defines the type of Kubernetes resource; a Service provides network access to a set of pods.
+metadata:
+  name: book-catalog # Name of the Service, used for identification and management within the cluster.
+spec:
+  selector:
+    app: book-catalog # The label selector used by the Service to identify the pods it routes traffic to.
+  type: LoadBalancer # Specifies the type of Service, in this case, a LoadBalancer, which provides external access to the service.
+  ports:
+    - protocol: TCP # The network protocol for the Service port, in this case, TCP.
+      port: 80 # The port that the Service will expose externally.
+      targetPort: 80 # The port on the pod that the traffic will be directed to.
